@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>terminal</title>
+  <style>
+    :root{
+      --bg:#0a0b1b;
+      --fg:#b0dfff;
+      --acc:#6ac0ff;
+      --muted:#667788;
+      --panel:rgba(106,192,255,0.05);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Courier New',monospace;-webkit-font-smoothing:antialiased;color:var(--fg);background:var(--bg);min-height:100vh;padding:2rem;line-height:1.3;font-size:1.6rem}
+
+    .container{display:flex;flex-direction:column;max-width:1200px;margin:0 auto;gap:2rem}
+
+    .search-bar{margin-bottom:1.5rem}
+    .search-input{background:none;border:none;border-bottom:1px solid var(--muted);color:var(--fg);font-family:'Courier New',monospace;font-size:1.2rem;width:100%;padding:0.3rem 0}
+    .search-input:focus{outline:none;border-color:var(--acc)}
+
+    .clock-container{display:flex;justify-content:flex-start;align-items:center;margin-bottom:1rem;gap:0.5rem}
+    .clock{color:var(--muted);font-family:'Courier New',monospace;font-size:1.1rem;letter-spacing:1px}
+    .clock span#time-display:before{content:"["}
+    .clock span#time-display:after{content:"]"}
+
+    .main-content{display:flex;flex-wrap:wrap;gap:2rem}
+    .panel{flex:1 1 45%;z-index:2}
+    .header{color:var(--acc);margin-bottom:0.8rem;font-family:'Courier New',monospace;letter-spacing:0.5px}
+
+    .tree ul{list-style:none;padding-left:1.2rem;margin:0}
+    .tree li{position:relative;padding-left:1.2rem}
+    .tree li:before{content:'';position:absolute;left:0;top:0;height:100%;border-left:1px solid var(--muted)}
+    .tree li:after{content:'';position:absolute;left:0;top:0.8rem;width:1rem;border-bottom:1px solid var(--muted)}
+    .tree li:last-child:before{height:0.8rem}
+
+    .folder{color:var(--acc);cursor:pointer;display:inline-block;position:relative}
+    .folder:before{content:'⊞ '}
+    .folder.collapsed:before{content:'⊟ '}
+    .folder-items{margin-left:1rem}
+    .folder.collapsed + .folder-items{display:none}
+
+    .link{color:inherit;text-decoration:none;display:block;padding:0.1rem 0;font-family:'Courier New',monospace}
+    .link:hover{text-decoration:underline}
+
+    .ascii-art{position:fixed;bottom:20px;right:20px;white-space:pre;font-family:monospace;line-height:1;color:var(--acc);font-size:1.3rem;z-index:1;opacity:0.8}
+
+    .background-pattern{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.05;overflow:hidden;background-image:repeating-radial-gradient(circle at 0 0,var(--acc) 1px,transparent 4px);}
+
+    @media(max-width:720px){.main-content{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="background-pattern"></div>
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="search..." id="search" autocomplete="off" />
+    </div>
+
+    <div class="clock-container">
+      <div class="clock" id="clock">
+        <span id="time-display"></span>
+        <span id="date-display"></span>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="panel">
+        <div class="header">~/social</div>
+        <div class="tree" id="social-tree">
+          <ul>
+            <li><a href="https://x.com/home" class="link">twitter</a></li>
+            <li><a href="https://www.tumblr.com/dashboard" class="link">tumblr</a></li>
+            <li><a href="https://soundcloud.com/stream" class="link">soundcloud</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="header">~/media</div>
+        <div class="tree" id="media-tree">
+          <ul>
+            <li><a href="https://youtube.com" class="link">youtube</a></li>
+            <li><a href="https://twitch.tv" class="link">twitch</a></li>
+            <li><a href="https://pinterest.com" class="link">pinterest</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="header">~/tools</div>
+        <div class="tree" id="tools-tree">
+          <ul>
+            <li><a href="https://addons.mozilla.org" class="link">addons</a></li>
+            <li><a href="https://cobalt.tools" class="link">cobalt</a></li>
+            <li><a href="https://www.virustotal.com" class="link">virustotal</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="header">~/productivity</div>
+        <div class="tree" id="productivity-tree">
+          <ul>
+            <li><a href="https://github.com" class="link">github</a></li>
+            <li><a href="https://overthewire.org" class="link">overthewire</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="ascii-art" id="animation"></div>
+  </div>
+
+  <script>
+    function forceFocus(){const input=document.getElementById('search');if(!input)return;input.focus();if(document.activeElement!==input){setTimeout(()=>input.focus(),50);setTimeout(()=>input.focus(),150);setTimeout(()=>input.focus(),300)}}
+    document.addEventListener('DOMContentLoaded',forceFocus);
+    window.addEventListener('load',forceFocus);
+
+    document.querySelectorAll('.folder').forEach(folder=>{folder.addEventListener('click',()=>folder.classList.toggle('collapsed'))});
+
+    document.getElementById('search').addEventListener('keypress',function(e){if(e.key==='Enter'){const query=this.value.trim();if(query){window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`,'_blank');this.value='';}}});
+
+    function updateClock(){const now=new Date();const time=now.toLocaleTimeString('en-US',{hour12:false});const date=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toLowerCase();document.getElementById('time-display').textContent=time;document.getElementById('date-display').textContent=` ${date}`}
+    setInterval(updateClock,1000);updateClock();
+
+    const animationFrames = [
+      `\n /\\_/\\\n( o.o )\n > ^ <\n/_..._\\\n`,
+      `\n /\\_/\\\n( -.- )\n > ^ <\n/_..._\\\n`,
+      `\n /\\_/\\\n( @.@ )\n > ^ <\n/_..._\\\n`
+    ];
+    let currentFrame=0;function animate(){document.getElementById('animation').textContent=animationFrames[currentFrame];currentFrame=(currentFrame+1)%animationFrames.length;}
+    setInterval(animate,800);animate();
+  </script>
+</body>
+</html>
