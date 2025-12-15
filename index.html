@@ -106,7 +106,8 @@
 
     document.querySelectorAll('.folder').forEach(folder=>{folder.addEventListener('click',()=>folder.classList.toggle('collapsed'))});
 
-    document.getElementById('search').addEventListener('keypress',function(e){if(e.key==='Enter'){const query=this.value.trim();if(query){window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`,'_blank');this.value='';}}});
+    document.getElementById('search').addEventListener('keypress',function(e){if(e.key==='Enter'){const query=this.value.trim();if(query){window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en&ncr=1`,'_blank');
+this.value='';}}});
 
     function updateClock(){const now=new Date();const time=now.toLocaleTimeString('en-US',{hour12:false});const date=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toLowerCase();document.getElementById('time-display').textContent=time;document.getElementById('date-display').textContent=` ${date}`}
     setInterval(updateClock,1000);updateClock();
